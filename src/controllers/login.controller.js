@@ -3,34 +3,55 @@ const jwt = require ("jsonwebtoken");
 const secret = process.env.SECRET
 //crear usuario
 const login = async (req, res) => {
-    try{
-        const {
-            usuario,
-            password
-        } = req.body
-        const connection = await getConnection();
-        const respuesta = await connection.query("SELECT id, nombre, apellido, rol  FROM usuario WHERE dni = ? AND password = ?", [usuario, password]);
-        console.log(respuesta);
-        const token = jwt.sign({
-            sub: respuesta[0].id,  // Accede al primer objeto de la respuesta (porque es un array)
-            name: respuesta[0].nombre,
-            exp: Date.now() + 60 * 30000  // Asegúrate de que el tiempo de expiración esté correcto
-        }, secret);
-        console.log(token)
-        if(respuesta.length > 0){
-            console.log("se encontró el usuario");
-            res.json({codigo: 200, mensaje: "OK", payload: respuesta[0], jwt: token}); // Asegúrate de enviar el usuario correcto
-        } else {
-            console.log("usuario no encontrado");
-            res.json({codigo: -1, mensaje: "Usuario o contraseña incorrecta", payload: []});
+    try {
+        console.log("Datos recibidos:", req.body); // <-- Agregar esto
+        const { usuario, password } = req.body;
+
+        if (!usuario || !password) {
+            return res.status(400).json({
+                codigo: -1,
+                mensaje: "Faltan credenciales"
+            });
         }
-        // res.json ({codigo: 200, mensaje: "Usuario añadido", payload: []});
+
+        const connection = await getConnection();
+        const respuesta = await connection.query(
+            "SELECT id, nombre, apellido, rol FROM usuario WHERE dni = ? AND password = ?",
+            [usuario, password]
+        );
+
+        if (respuesta.length > 0) {
+            const usuarioEncontrado = respuesta[0];
+            const token = jwt.sign(
+                {
+                    sub: usuarioEncontrado.id,
+                    name: usuarioEncontrado.nombre,
+                    exp: Math.floor(Date.now() / 1000) + (60 * 60)
+                },
+                secret
+            );
+
+            res.json({
+                codigo: 200,
+                mensaje: "OK",
+                payload: usuarioEncontrado,
+                jwt: token
+            });
+        } else {
+            res.status(401).json({
+                codigo: -1,
+                mensaje: "Usuario o contraseña incorrectos"
+            });
+        }
+    } catch (error) {
+        res.status(500).json({
+            codigo: -2,
+            mensaje: "Error interno del servidor",
+            error: error.message
+        });
     }
-    catch(error){
-        res.status(500);
-        res.send(error.message);
-    }
-}
+};
+
 
 const resetearPassword = async(req, res) => {
     try{
