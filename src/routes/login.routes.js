@@ -1,10 +1,9 @@
+import { login } from "../controllers/login.controller.js"; // Correcto import de login
 import { Router } from "express";
-import { methods as loginController} from "./../controllers/login.controller";
 
 const router = Router();
 
-router.post("/login", loginController.login);
-router.put("/resetearPassword/:id", loginController.resetearPassword);
-
+// Ruta para login
+router.post("/login", login); // Usando el método login como callback
 
 export default router;

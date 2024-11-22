@@ -1,12 +1,10 @@
 import { config } from "dotenv";
 
+config(); // Carga las variables de entorno desde .env
 
-config();
-//pone a disposicion las variables de entorno que hayamos configurado en .env 
-
-export  default{
+export default {
     host: process.env.HOST,
     database: process.env.DATABASE,
-    user:process.env.USER || "root",
-    password: process.env.PASSWORD || ""
-}
+    user: process.env.USER || "root",
+    password: process.env.PASSWORD || "",
+};

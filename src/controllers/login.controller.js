@@ -1,10 +1,11 @@
-import { getConnection } from "./../database/database";
-const jwt = require ("jsonwebtoken");
-const secret = process.env.SECRET
-//crear usuario
-const login = async (req, res) => {
+import { getConnection } from "../database/database";
+const jwt = require("jsonwebtoken");
+const secret = process.env.SECRET;
+
+// Crear usuario (login)
+export const login = async (req, res) => {
     try {
-        console.log("Datos recibidos:", req.body); // <-- Agregar esto
+        console.log("Datos recibidos:", req.body); // <-- Log para depurar datos recibidos
         const { usuario, password } = req.body;
 
         if (!usuario || !password) {
@@ -26,10 +27,12 @@ const login = async (req, res) => {
                 {
                     sub: usuarioEncontrado.id,
                     name: usuarioEncontrado.nombre,
-                    exp: Math.floor(Date.now() / 1000) + (60 * 60)
+                    exp: Math.floor(Date.now() / 1000) + (60 * 60) // Expira en 1 hora
                 },
                 secret
             );
+
+            console.log('Token generado:', token); // <-- Log para verificar el token generado
 
             res.json({
                 codigo: 200,
@@ -50,33 +53,4 @@ const login = async (req, res) => {
             error: error.message
         });
     }
-};
-
-
-const resetearPassword = async(req, res) => {
-    try{
-        const { id } = req.params
-        const {
-            password
-        } = req.body
-        const connection = await getConnection();
-        const respuesta = await connection.query("UPDATE usuario set password = ? where id = ?", [password, id]);
-        if(respuesta.affectedRows == 1){
-            res.json({codigo: 200, mensaje:"Contraseña restablecida", payload: []})
-        }
-        else{
-            res.json({codigo: -1, mensaje:"Usuario no encontrado", payload: []})
-        }
-        console.log(respuesta);
-    }
-    catch(error){
-        res.status(500);
-        res.send(error.message);
-    }
-}
-
-
-export const methods = {
-    login,
-    resetearPassword
 };
