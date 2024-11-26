@@ -23,10 +23,13 @@ export const login = async (req, res) => {
 
         if (respuesta.length > 0) {
             const usuarioEncontrado = respuesta[0];
+
+            // Aquí es donde agregamos el rol al payload del JWT
             const token = jwt.sign(
                 {
-                    sub: usuarioEncontrado.id,
-                    name: usuarioEncontrado.nombre,
+                    sub: usuarioEncontrado.id,     // id del usuario
+                    name: usuarioEncontrado.nombre, // nombre del usuario
+                    rol: usuarioEncontrado.rol,     // rol del usuario
                     exp: Math.floor(Date.now() / 1000) + (60 * 60) // Expira en 1 hora
                 },
                 secret

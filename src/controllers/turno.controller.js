@@ -4,21 +4,59 @@ const jwt = require ("jsonwebtoken");
 
 // Obtener turnos de un paciente
 const obtenerTurnoPaciente = async (req, res) => {
-    try{
-        const resultadoVerificar = verificarToken(req);
-        if(resultadoVerificar.estado == false){
-            return res.send({codigo: -1, mensaje: resultadoVerificar.error})
-        }
-        const {id} = req.params
-        const connection = await getConnection();
-        const response = await connection.query("SELECT T.id as id_turno, T.nota, T.fecha, T.hora, T.id_paciente, T.id_cobertura, U.nombre as nombre_medico, U.apellido as apellido_medico, E.id as id_especialidad, E.descripcion as especialidad from turno T         join agenda A on T.id_agenda = A.id join usuario U on A.id_medico = U.id join especialidad E on A.id_especialidad = E.id where id_paciente = ?",id);
-        res.json({codigo: 200, mensaje: "OK", payload:  response});
+    try {
+      const resultadoVerificar = verificarToken(req);
+      if (resultadoVerificar.estado === false) {
+        return res.status(401).send({
+          codigo: -1,
+          mensaje: resultadoVerificar.error,
+        });
+      }
+  
+      const { id } = req.params;
+      if (!id) {
+        return res.status(400).send({
+          codigo: -2,
+          mensaje: 'Falta el ID del paciente en la solicitud.',
+        });
+      }
+  
+      const connection = await getConnection();
+      const response = await connection.query(
+        `SELECT T.id as id_turno, T.nota, T.fecha, T.hora, T.id_paciente, 
+                T.id_cobertura, U.nombre as nombre_medico, 
+                U.apellido as apellido_medico, E.id as id_especialidad, 
+                E.descripcion as especialidad 
+         FROM turno T
+         JOIN agenda A on T.id_agenda = A.id
+         JOIN usuario U on A.id_medico = U.id
+         JOIN especialidad E on A.id_especialidad = E.id
+         WHERE id_paciente = ?`,
+        [id]
+      );
+  
+      if (response.length === 0) {
+        return res.status(404).send({
+          codigo: -3,
+          mensaje: 'No se encontraron turnos para este paciente.',
+        });
+      }
+  
+      res.json({
+        codigo: 200,
+        mensaje: 'OK',
+        payload: response,
+      });
+    } catch (error) {
+      console.error('Error al obtener turnos:', error);
+      res.status(500).send({
+        codigo: -4,
+        mensaje: 'Error interno del servidor.',
+        error: error.message,
+      });
     }
-    catch(error){
-            res.status(500);
-            res.send(error.message);
-    }
-}
+  };
+  
 
 // Obtener turnos de un médico en una fecha
 const obtenerTurnosMedico = async (req, res) => {
