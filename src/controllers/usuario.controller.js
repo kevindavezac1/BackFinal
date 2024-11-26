@@ -1,6 +1,8 @@
 import { getConnection } from "./../database/database";
 const secret = process.env.secret;
 const jwt = require ("jsonwebtoken");
+
+
 // Obtener usuarios
 const obtenerUsuarios = async (req, res) => {
     try{
@@ -19,6 +21,8 @@ const obtenerUsuarios = async (req, res) => {
     }
 }
 
+
+
 function verificarToken(req){
     const token = req.headers.authorization;
     if(!token){
@@ -27,9 +31,9 @@ function verificarToken(req){
     console.log("paso")
     try{
         const payload = jwt.verify(token, secret);
-        if(Date.now() > payload.exp){
-            return {estado: false, error: "Token expirado"}
-        }
+if(Date.now() > payload.exp * 1000){
+    return {estado: false, error: "Token expirado"}
+}
         return {estado: true};
     }
     catch(error){

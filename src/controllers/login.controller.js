@@ -35,6 +35,7 @@ export const login = async (req, res) => {
                 secret
             );
 
+
             console.log('Token generado:', token); // <-- Log para verificar el token generado
 
             res.json({
