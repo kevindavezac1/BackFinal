@@ -15,6 +15,7 @@ export const login = async (req, res) => {
             });
         }
 
+        // Conexión a la base de datos
         const connection = await getConnection();
         const respuesta = await connection.query(
             "SELECT id, nombre, apellido, rol FROM usuario WHERE dni = ? AND password = ?",
@@ -34,7 +35,6 @@ export const login = async (req, res) => {
                 },
                 secret
             );
-
 
             console.log('Token generado:', token); // <-- Log para verificar el token generado
 
