@@ -1,9 +1,10 @@
-import express from 'express';
-import { methods as operadorController } from '../controllers/operador.controller';
+// import express from 'express';
+// import { methods as operadorController } from '../controllers/operador.controller';
 
-const router = express.Router();
+// const router = express.Router();
 
-// Ruta para crear un paciente desde el operador
-router.post('/operador/pacientes', operadorController.crearPaciente);
+// // Ruta para crear un paciente desde el operador
+// router.post('/operador/pacientes', operadorController.crearPaciente);
 
-export default router;
+// export default router;
+// // 
