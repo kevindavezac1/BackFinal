@@ -15,7 +15,7 @@ const obtenerEspecialidades = async (req, res) => {
             res.json({codigo: 200, mensaje:"OK", payload: response})
         }
         else{
-            res.json({codigo: -1, mensaje:"Error obteniendo especialidades", payload: []})
+            res.json({codigo: -1, mensaje:"Error obteniendo especialidades ", payload: []})
         }
     }
     catch(error){

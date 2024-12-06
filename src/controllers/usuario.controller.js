@@ -4,11 +4,12 @@ const jwt = require("jsonwebtoken");
 
 // Función para verificar el token JWT
 function verificarToken(req) {
-    const token = req.headers.authorization;
+    // Ahora se obtiene directamente el valor del encabezado 'Authorization'
+    const token = req.headers.authorization;  // Asumimos que el token es directamente el valor del encabezado
     if (!token) {
         return { estado: false, error: "Token no proporcionado" };
     }
-    
+
     try {
         const payload = jwt.verify(token, secret);
         if (Date.now() > payload.exp * 1000) {
