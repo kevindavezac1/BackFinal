@@ -4,15 +4,15 @@ const jwt = require("jsonwebtoken");
 
 // Función para verificar el token JWT
 function verificarToken(req) {
-    // Ahora se obtiene directamente el valor del encabezado 'Authorization'
-    const token = req.headers.authorization;  // Asumimos que el token es directamente el valor del encabezado
+    const token = req.headers.authorization; // Asumiendo que el token es directamente el valor del encabezado
     if (!token) {
         return { estado: false, error: "Token no proporcionado" };
     }
 
     try {
         const payload = jwt.verify(token, secret);
-        if (Date.now() > payload.exp * 1000) {
+        console.log('Payload del token:', payload);
+        if (Date.now() > payload.exp) {
             return { estado: false, error: "Token expirado" };
         }
         return { estado: true };
@@ -66,7 +66,7 @@ const obtenerUsuario = async (req, res) => {
     }
 };
 
-// Crear un nuevo usuario
+
 const crearUsuario = async (req, res) => {
     try {
         const {
@@ -78,7 +78,8 @@ const crearUsuario = async (req, res) => {
             rol,
             email,
             telefono,
-            id_cobertura
+            id_cobertura,
+            id_especialidad // Este dato debe venir del request si el rol es "medico"
         } = req.body;
 
         const usuario = {
@@ -94,13 +95,30 @@ const crearUsuario = async (req, res) => {
         };
 
         const connection = await getConnection();
+
         const response = await connection.query("INSERT INTO usuario SET ?", usuario);
-        res.json({ codigo: 200, mensaje: "Usuario añadido", payload: [{ id_usuario: response.insertId }] });
+        const id_usuario = response.insertId;
+
+        
+        if (rol === "Medico") {
+            const medicoEspecialidad = {
+                id_medico: id_usuario,
+                id_especialidad
+            };
+
+            await connection.query("INSERT INTO medico_especialidad SET ?", medicoEspecialidad);
+        }
+
+        res.json({
+            codigo: 200,
+            mensaje: "Usuario añadido",
+            payload: [{ id_usuario }]
+        });
     } catch (error) {
-        res.status(500);
-        res.send(error.message);
+        res.status(500).send(error.message);
     }
 };
+
 
 // Actualizar un usuario
 const actualizarUsuario = async (req, res) => {

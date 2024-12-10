@@ -4,25 +4,18 @@ const secret = process.env.secret;
 const jwt = require ("jsonwebtoken");
 
 const obtenerEspecialidades = async (req, res) => {
-    try{
-        const resultadoVerificar = verificarToken(req);
-        if(resultadoVerificar.estado == false){
-            return res.send({codigo: -1, mensaje: resultadoVerificar.error})
-        }
+    try {
         const connection = await getConnection();
         const response = await connection.query("SELECT * from especialidad");
-        if(response.length > 0){
-            res.json({codigo: 200, mensaje:"OK", payload: response})
+        if (response.length > 0) {
+            res.json({ codigo: 200, mensaje: "OK", payload: response });
+        } else {
+            res.json({ codigo: -1, mensaje: "Error obteniendo especialidades", payload: [] });
         }
-        else{
-            res.json({codigo: -1, mensaje:"Error obteniendo especialidades ", payload: []})
-        }
+    } catch (error) {
+        res.status(500);
+        res.send(error.message);
     }
-    catch(error){
-            res.status(500);
-            res.send(error.message);
-    }
-    
 }
 const obtenerCoberturas = async (req, res) => {
     try{
@@ -66,27 +59,23 @@ const obtenerEspecialidadesMedico = async (req, res) => {
 }
 
 const obtenerMedicoPorEspecialidad = async (req, res) => {
-    try{
-        const {id_especialidad } = req.params;
-        const resultadoVerificar = verificarToken(req);
-        if(resultadoVerificar.estado == false){
-            return res.send({codigo: -1, mensaje: resultadoVerificar.error})
-        }
+    try {
+        const { id_especialidad } = req.params;
+        console.log("ID de especialidad recibido:", id_especialidad); // Log para depuración
         const connection = await getConnection();
-        const response = await connection.query("SELECT ME.id_medico, U.nombre, U.apellido, ME.id_especialidad from medico_especialidad ME join usuario U on ME.id_medico = U.id where id_especialidad = ? ",id_especialidad);
-        if(response.length > 0){
-            res.json({codigo: 200, mensaje:"OK", payload: response})
+        const response = await connection.query(
+            "SELECT ME.id_medico, U.nombre, U.apellido, ME.id_especialidad FROM medico_especialidad ME JOIN usuario U ON ME.id_medico = U.id WHERE id_especialidad = ?",
+            [id_especialidad]
+        );
+        if (response.length > 0) {
+            res.json({ codigo: 200, mensaje: "OK", payload: response });
+        } else {
+            res.json({ codigo: 200, mensaje: "OK: No existe médico para esa especialidad", payload: [] });
         }
-        else{
-            res.json({codigo: 200, mensaje:"OK: No existe médico para esa especialidad", payload: []})
-        }
+    } catch (error) {
+        res.status(500).send({ codigo: 500, mensaje: 'Error interno del servidor', error: error.message });
     }
-    catch(error){
-            res.status(500);
-            res.send(error.message);
-    }
-    
-}
+};
 
 const crearMedicoEspecialidad = async (req, res) => {
     try{

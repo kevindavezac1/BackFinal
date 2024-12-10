@@ -24,8 +24,6 @@ const obtenerAgenda = async (req, res) => {
             res.send(error.message);
     }
 
-
-
     
 }
 

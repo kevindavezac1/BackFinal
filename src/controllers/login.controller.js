@@ -1,60 +1,91 @@
-import { getConnection } from "../database/database";
+import { getConnection } from "./../database/database";
 const jwt = require("jsonwebtoken");
 const secret = process.env.SECRET;
 
-// Crear usuario (login)
-export const login = async (req, res) => {
+// Iniciar sesión
+const login = async (req, res) => {
     try {
-        console.log("Datos recibidos:", req.body); // <-- Log para depurar datos recibidos
+        // Desestructurar los datos recibidos en el cuerpo de la solicitud
         const { usuario, password } = req.body;
-
-        if (!usuario || !password) {
-            return res.status(400).json({
-                codigo: -1,
-                mensaje: "Faltan credenciales"
-            });
-        }
-
-        // Conexión a la base de datos
+        
+        // Establecer la conexión a la base de datos
         const connection = await getConnection();
+
+        // Realizar la consulta en la base de datos
         const respuesta = await connection.query(
             "SELECT id, nombre, apellido, rol FROM usuario WHERE dni = ? AND password = ?",
             [usuario, password]
         );
 
+        // Verificar si la respuesta contiene datos
         if (respuesta.length > 0) {
-            const usuarioEncontrado = respuesta[0];
+            const usuarioEncontrado = respuesta[0];  // Obtener el primer usuario de la respuesta
 
-            // Aquí es donde agregamos el rol al payload del JWT
+            // Generar el token JWT
             const token = jwt.sign(
                 {
-                    sub: usuarioEncontrado.id,     // id del usuario
-                    name: usuarioEncontrado.nombre, // nombre del usuario
-                    rol: usuarioEncontrado.rol,     // rol del usuario
-                    exp: Math.floor(Date.now() / 1000) + (60 * 60) // Expira en 1 hora
+                    sub: usuarioEncontrado.id,     // ID del usuario
+                    name: usuarioEncontrado.nombre, // Nombre del usuario
+                    rol: usuarioEncontrado.rol,    // Rol del usuario
+                    exp: Date.now() + 60 * 30000, // Expiración del token en 1 hora
                 },
                 secret
             );
 
-            console.log('Token generado:', token); // <-- Log para verificar el token generado
-
+            // Devolver la respuesta con los datos del usuario y el token
             res.json({
                 codigo: 200,
                 mensaje: "OK",
-                payload: usuarioEncontrado,
-                jwt: token
+                payload: usuarioEncontrado, // Devolver solo el usuario encontrado
+                jwt: token,
             });
         } else {
-            res.status(401).json({
+            // Si no se encuentra el usuario, devolver mensaje de error
+            res.json({
                 codigo: -1,
-                mensaje: "Usuario o contraseña incorrectos"
+                mensaje: "Usuario o contraseña incorrecta",
+                payload: [],
             });
         }
     } catch (error) {
-        res.status(500).json({
-            codigo: -2,
-            mensaje: "Error interno del servidor",
-            error: error.message
-        });
+        // Manejo de errores
+        res.status(500);
+        res.send(error.message);
     }
+};
+
+// Restablecer contraseña
+const resetearPassword = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { password } = req.body;
+        
+        const connection = await getConnection();
+        const respuesta = await connection.query(
+            "UPDATE usuario SET password = ? WHERE id = ?",
+            [password, id]
+        );
+
+        if (respuesta.affectedRows == 1) {
+            res.json({
+                codigo: 200,
+                mensaje: "Contraseña restablecida",
+                payload: [],
+            });
+        } else {
+            res.json({
+                codigo: -1,
+                mensaje: "Usuario no encontrado",
+                payload: [],
+            });
+        }
+    } catch (error) {
+        res.status(500);
+        res.send(error.message);
+    }
+};
+
+export const methods = {
+    login,
+    resetearPassword
 };
