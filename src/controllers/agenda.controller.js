@@ -28,44 +28,63 @@ const obtenerAgenda = async (req, res) => {
 }
 
 const crearAgenda = async (req, res) => {
-    try{
+    try {
+        console.log("Datos recibidos en la solicitud:", req.body);
+
         const {
             id_medico,
             id_especialidad,
             fecha,
             hora_entrada,
             hora_salida,
-         } = req.body;
-         const registroAgenda = {
+        } = req.body;
+
+        console.log("Datos desestructurados:", {
             id_medico,
             id_especialidad,
             fecha,
             hora_entrada,
             hora_salida,
-         };
+        });
+
+        const registroAgenda = {
+            id_medico,
+            id_especialidad,
+            fecha,
+            hora_entrada,
+            hora_salida,
+        };
+
+        console.log("Datos preparados para inserción:", registroAgenda);
+
         const resultadoVerificar = verificarToken(req);
-        if(resultadoVerificar.estado == false){
-            return res.send({codigo: -1, mensaje: resultadoVerificar.error})
+        console.log("Resultado de la verificación del token:", resultadoVerificar);
+
+        if (resultadoVerificar.estado == false) {
+            console.error("Error en la verificación del token:", resultadoVerificar.error);
+            return res.send({ codigo: -1, mensaje: resultadoVerificar.error });
         }
+
         const connection = await getConnection();
-        const response = await connection.query("INSERT INTO agenda SET ?",registroAgenda);
-        if(response.affectedRows > 0){
-            res.json({codigo: 200, mensaje: "OK", payload:  [{id_agenda: response.insertId}]});
+        console.log("Conexión establecida con la base de datos.");
+
+        const response = await connection.query("INSERT INTO agenda SET ?", registroAgenda);
+        console.log("Respuesta de la base de datos:", response);
+
+        if (response.affectedRows > 0) {
+            console.log("Agenda insertada correctamente con ID:", response.insertId);
+            res.json({ codigo: 200, mensaje: "OK", payload: [{ id_agenda: response.insertId }] });
+        } else {
+            console.error("Error al insertar la agenda.");
+            res.json({ codigo: -1, mensaje: "Error insertando agenda", payload: [] });
         }
-        else{
-            res.json({codigo: -1, mensaje: "Error insertando agenda", payload:  []});
-        }
-        
+    } catch (error) {
+        console.error("Error en el servidor:", error.message);
+        res.status(500);
+        res.send(error.message);
     }
-    catch(error){
-            res.status(500);
-            res.send(error.message);
-    }
+};
 
-
-
-    
-}
 
 const modificarAgenda = async (req, res) => {
     let connection;
