@@ -1,5 +1,5 @@
 import { getConnection } from "./../database/database";
-const secret = process.env.secret;
+const secret = process.env.secret; 
 const jwt = require ("jsonwebtoken");
 
 // Obtener turnos de un paciente

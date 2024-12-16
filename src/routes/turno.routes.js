@@ -9,4 +9,4 @@ router.post("/asignarTurnoPaciente", turnoController.asignarTurnoPaciente);
 router.put("/actualizarTurnoPaciente/:id", turnoController.actualizarTurnoPaciente);
 router.delete("/eliminarTurnoPaciente/:id", turnoController.eliminarTurnoPaciente);
 
-export default router;
+export default router; 
