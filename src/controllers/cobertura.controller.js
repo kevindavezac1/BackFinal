@@ -1,4 +1,4 @@
-import { getConnection } from "../database/database";
+import { getConnection } from "./../database/database";
 
 // Obtener todas las coberturas
 export const getCoberturas = async (req, res) => {
@@ -26,29 +26,47 @@ export const createCobertura = async (req, res) => {
 };
 
 
-
 export const deleteCobertura = async (req, res) => {
   try {
     const { id } = req.params;
-    console.log('Intentando eliminar cobertura con ID:', id);
 
-    const usuarios = await query("SELECT * FROM usuario WHERE id_cobertura = ?", [id]);
-    console.log('Usuarios asociados:', usuarios);
+    // Obtener conexión desde `getConnection`
+    const connection = await getConnection();
 
-    if (usuarios.length > 0) {
-      console.log('Cobertura asociada a usuarios, no se puede eliminar.');
-      return res.status(400).json({ message: "No se puede eliminar la cobertura porque está asociada a un usuario." });
+    // Verificar si hay usuarios asociados a esta cobertura
+    const usuariosAsociados = await connection.query(
+      "SELECT * FROM usuario WHERE id_cobertura = ?",
+      [id]
+    );
+
+    if (usuariosAsociados.length > 0) {
+      return res.status(400).json({
+        message: "No se puede eliminar la cobertura porque tiene usuarios asociados.",
+      });
     }
 
-    const result = await query("DELETE FROM cobertura WHERE id = ?", [id]);
-    console.log('Resultado de eliminación:', result);
+    // Verificar si la cobertura existe
+    const cobertura = await connection.query("SELECT * FROM cobertura WHERE id = ?", [id]);
+    if (cobertura.length === 0) {
+      return res.status(404).json({ message: "Cobertura no encontrada" });
+    }
 
-    res.json({ message: "Cobertura eliminada correctamente" });
+    // Eliminar la cobertura
+    const result = await connection.query("DELETE FROM cobertura WHERE id = ?", [id]);
+    if (result.affectedRows > 0) {
+      return res.json({ message: "Cobertura eliminada correctamente" });
+    } else {
+      return res.status(404).json({ message: "No se pudo eliminar la cobertura" });
+    }
   } catch (error) {
-    console.error("Error al eliminar cobertura:", error);
-    res.status(500).json({ message: "Error al eliminar la cobertura", error: error.message });
+    console.error("Error al eliminar la cobertura:", error);
+    return res.status(500).json({ message: "Error al eliminar la cobertura", error: error.message });
   }
 };
+
+
+
+
 // Actualizar una cobertura existente
 export const updateCobertura = async (req, res) => {
   try {
