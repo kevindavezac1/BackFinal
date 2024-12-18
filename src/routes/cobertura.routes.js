@@ -10,4 +10,5 @@ router.delete('/coberturas/:id', coberturaController.deleteCobertura);
 router.get('/coberturas/usuario/:id', coberturaController.getCoberturaDelUsuario);
 
 
+
 export default router;
