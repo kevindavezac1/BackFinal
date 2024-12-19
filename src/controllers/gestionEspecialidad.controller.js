@@ -1,6 +1,6 @@
 import { getConnection } from "../database/database.js";
 
-export const getEspecialidades = async (req, res) => {
+export const getEspecialidades = async (_req, res) => {
   try {
     const connection = await getConnection();
     const especialidades = await connection.query("SELECT id, descripcion FROM especialidad");
